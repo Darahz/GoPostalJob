@@ -1,4 +1,6 @@
 Config = {}
+Config.Debug = true
+
 
 Config.VehicleOptions = {
     VehicleHash = -233098306,
