@@ -69,7 +69,7 @@ RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
         exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(currentRoute.location.x, currentRoute.location.y, currentRoute.location.z), 1, 1, {
             name = "gopostal_"..rnd,
             heading = currentRoute.location.w,
-            debugPoly = true,
+            debugPoly = Config.Debug,
             minZ = currentRoute.location.z - 1,
             maxZ = currentRoute.location.z + 1
         }, {
