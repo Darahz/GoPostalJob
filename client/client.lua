@@ -34,7 +34,6 @@ end
 
 local function deletePed()
     DeletePed(ped)
-    DeleteVehicle(veh)
 end
 
 local function SpawnGoPostVeh()
