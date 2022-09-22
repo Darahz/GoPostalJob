@@ -18,7 +18,7 @@ local function spawnPed()
     while not HasModelLoaded(Config.Ped.Model) do
         Wait(100)
     end
-    ped = CreatePed(0,Config.Ped.Model,Config.Ped.Locaton,false,false)
+    ped = CreatePed(0,Config.Ped.Model,Config.Ped.Location,false,false)
     FreezeEntityPosition(ped,true)
     SetEntityInvincible(ped,true)
     SetBlockingOfNonTemporaryEvents(ped, true)
@@ -86,7 +86,7 @@ local function removePostalBlip()
     RemoveBlip(goPostDeliveryBlip)
 end
 
-RegisterNetEvent('gprdx:gopostal:client:requestpaycheck', function()
+RegisterNetEvent('prdx-gopostal:client:requestpaycheck', function()
     cleanupAfterJob()
     TriggerServerEvent('gprdx:gopostal:server:requestpaycheck')
 end)
