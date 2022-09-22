@@ -31,7 +31,7 @@ Config.DeliveryTypes = {
     "10-42's menu",
     "Pillbox love letter",
     "Munja Munja's menu",
-    "Southside records newest single",
+    "rockford records newest single",
     "Finns taxi prices",
     "Finns taxi tours poster",
     "Bravo's best hair tips",
