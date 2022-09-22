@@ -1,13 +1,16 @@
 local QBCore = exports['qb-core']:GetCoreObject()
+
 local jobDone = false
 local startedJob = false
 local jobCanceled = false
+
 local ped = nil
 
 local numberOfStops = 0
 
 local veh = nil
 local endBlip = nil
+local goPostDeliveryBlip = nil
 local rnd = 0
 
 local function spawnPed()
@@ -36,7 +39,16 @@ local function deletePed()
     DeletePed(ped)
 end
 
-local function SpawnGoPostVeh()
+local function cleanupAfterJob()
+    jobDone = false
+    jobCanceled = false
+    startedJob = false
+    DeleteVehicle(veh)
+    DeleteWaypoint()
+    removePostalBlip()
+end
+
+local function spawnGoPostVeh()
     QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
         veh = NetToVeh(netId)
         SetVehicleNumberPlateText(veh, Config.VehicleOptions.VehiclePlate .. tostring(math.random(1000, 9999)))
@@ -49,24 +61,56 @@ local function SpawnGoPostVeh()
     end, Config.VehicleOptions.VehicleHash, Config.VehicleOptions.VehicleSpawnPos, true)
 end
 
+local function drawMarkerOnLocation(loc)
+    CreateThread(function()
+        while jobDone == false do
+            Citizen.Wait(0)
+            DrawMarker(0, loc.x, loc.y, loc.z, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 255, 191, 0, 50, false, true, 2, nil, nil, false)
+        end
+    end)
+end
+
+local function displayBlipOnLocation(loc,displayText)
+    goPostDeliveryBlip = AddBlipForCoord(loc)
+    SetBlipSprite(goPostDeliveryBlip, 501)
+    SetBlipColour(goPostDeliveryBlip, 0)
+    SetBlipScale (goPostDeliveryBlip, 0.7)
+    SetBlipAsShortRange(goPostDeliveryBlip, true)
+    
+    SetBlipRoute(goPostDeliveryBlip, true)
+    SetBlipRouteColour(goPostDeliveryBlip, 3)
+    
+    BeginTextCommandSetBlipName("STRING")
+    AddTextComponentString(displayText)
+    EndTextCommandSetBlipName(goPostDeliveryBlip)
+end
+
+local function removePostalBlip()
+    SetBlipRoute(goPostDeliveryBlip, false)
+    RemoveBlip(goPostDeliveryBlip)
+end
+
 RegisterNetEvent('gprdx:gopostal:client:requestpaycheck', function()
+    cleanupAfterJob()
     TriggerServerEvent('gprdx:gopostal:server:requestpaycheck')
 end)
 
 RegisterNetEvent('prdx-gopostal:client:canceljob', function()
+    removePostalBlip()
     DeleteVehicle(veh)
     DeleteWaypoint()
+    cleanupAfterJob()
 end)
 
-RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
-
-    SpawnGoPostVeh()
-
+RegisterNetEvent('prdx-gopostal:client:startpostaljob', function()
     local job = Config.PostalRoutes.Jobs[math.random(#Config.PostalRoutes.Jobs)]
-    
     local currentRoute = nil
+
     startedJob  = true
     jobCanceled = false
+
+    spawnGoPostVeh()
+
     for i = 0, (#job.routes - 1) do
         currentRoute = job.routes[i]
         endBlip = vector2(currentRoute.location.x, currentRoute.location.y)
@@ -75,8 +119,6 @@ RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
         local itemToDeliver = Config.DeliveryTypes[math.random(#Config.DeliveryTypes)];
         local labelTxt = tostring("Deliver " .. itemToDeliver .. "")
 
-        SetNewWaypoint(endBlip.x,endBlip.y)
-        
         exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(currentRoute.location.x, currentRoute.location.y, currentRoute.location.z), 1, 1, {
             name = "gopostal_"..rnd,
             heading = currentRoute.location.w,
@@ -109,31 +151,22 @@ RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
         })
         
         QBCore.Functions.Notify("[" .. i .. "/" .. #job.routes -1 .. "]" .. " Drawing route : " .. job.routes[i].name , "success")
-        
-        CreateThread(function()
-            while jobDone == false do
-                Citizen.Wait(0)
-                DrawMarker(2, currentRoute.location.x, currentRoute.location.y, currentRoute.location.z + 1.0, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 255, 128, 0, 50, false, true, 2, nil, nil, false)
-            end
-        end)
 
+        displayBlipOnLocation(currentRoute.location,"Package Delivery")
+        drawMarkerOnLocation(currentRoute.location)
         while jobDone == false do
-            
             Citizen.Wait(1000)
         end
-
+        removePostalBlip()
         if jobCanceled == true then
-            jobDone = false
-            jobCanceled = false
-            startedJob = false
-            DeleteWaypoint()
+            cleanupAfterJob()
             break
         end
 
         jobDone = false
     end
 
-    currentRoute = job.routes[#job.routes]
+    currentRoute = job.routes[#job.routes] -- Return to GoPostal HQ
 
     QBCore.Functions.Notify("Good job! Time to back to GoPostal" , "success")
     SetNewWaypoint(currentRoute.location.x, currentRoute.location.y)
@@ -158,7 +191,7 @@ RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
             txt = "Request a postal route",
             hidden = startedJob,
             params = {
-                event = 'prdx-gopostal:client:StartPostalJob',
+                event = 'prdx-gopostal:client:startpostaljob',
             }
         },
         {
@@ -195,12 +228,10 @@ RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     deletePed()
 end)
 
-if Config.Debug == true then
-    RegisterCommand("nextroute",function()
-        jobDone = true
-    end, false)
+RegisterCommand("nextroute",function()
+    jobDone = true
+end, false)
 
-    RegisterCommand("spawngopostalped",function()
-        spawnPed()
-    end, false)
-end
+RegisterCommand("spawngopostalped",function()
+    spawnPed()
+end, false)
