@@ -12,7 +12,7 @@ Config.DeliveryTypes = {
     "package",
     "bills",
     "magazines",
-    "fassion mags",
+    "fashion mags",
     "posters",
     "the hottest news",
     "pisswasser campaign poster"
@@ -20,7 +20,7 @@ Config.DeliveryTypes = {
 
 Config.Ped = {
     Model = "s_m_m_postal_02",
-    Locaton = vector4(52.29, 110.02, 78.16, 175.9),
+    Location = vector4(52.29, 110.02, 78.16, 175.9),
     scenario = 'WORLD_HUMAN_CLIPBOARD'
 }
 
@@ -92,11 +92,11 @@ Config.PostalRoutes = {
                     location = vector4(-144.0, 229.61, 94.93, 179.13)
                 },
                 [2] = {
-                    name = "Spitroasters",
+                    name = "Spitroasters Meathouse",
                     location = vector4(-241.91, 279.77, 92.04, 0.75)
                 },
                 [3] = {
-                    name = "Parkinglot WC",
+                    name = "Parking lot WC",
                     location = vector4(-327.58, 270.73, 86.46, 280.89)
                 },
                 [4] = {
@@ -153,15 +153,15 @@ Config.PostalRoutes = {
                     location = vector4(91.29, -1660.83, 29.29, 24.58)
                 },
                 [4] = {
-                    name = "Ron gasstation",
+                    name = "Ron gas station",
                     location = vector4(184.95, -1577.35, 29.29, 209.34)
                 },
                 [5] = {
-                    name = "Harty Tac<3",
+                    name = "Hearty Tac<3",
                     location = vector4(438.66, -1466.42, 29.29, 248.75)
                 },
                 [6] = {
-                    name = "Bers tool supplies",
+                    name = "Bert's tool supplies",
                     location = vector4(361.07, -1312.77, 32.46, 50.96)
                 },
                 [7] = {
