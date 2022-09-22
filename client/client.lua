@@ -35,10 +35,6 @@ local function spawnPed()
     })
 end
 
-local function deletePed()
-    DeletePed(ped)
-end
-
 local function cleanupAfterJob()
     jobDone = false
     jobCanceled = false
@@ -225,7 +221,7 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     print("Ped removed")
-    deletePed()
+    DeletePed(ped)
 end)
 
 RegisterCommand("nextroute",function()
