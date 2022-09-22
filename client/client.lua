@@ -203,6 +203,8 @@ RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
     exports['qb-menu']:openMenu(MainMenu)
 end)
 
+-- Spawn ped/Remove
+
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() == resourceName then
         spawnPed()
@@ -210,8 +212,10 @@ AddEventHandler('onResourceStart', function(resourceName)
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
-    DeleteVehicle(veh)
-    DeleteWaypoint()
+    if GetCurrentResourceName() == resourceName then
+        DeleteVehicle(veh)
+        DeleteWaypoint()
+    end
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
@@ -223,11 +227,3 @@ RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     print("Ped removed")
     DeletePed(ped)
 end)
-
-RegisterCommand("nextroute",function()
-    jobDone = true
-end, false)
-
-RegisterCommand("spawngopostalped",function()
-    spawnPed()
-end, false)
