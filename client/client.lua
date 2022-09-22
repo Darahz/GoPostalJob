@@ -88,7 +88,7 @@ end
 
 RegisterNetEvent('prdx-gopostal:client:requestpaycheck', function()
     cleanupAfterJob()
-    TriggerServerEvent('gprdx:gopostal:server:requestpaycheck')
+    TriggerServerEvent('prdx-gopostal:gopostal:server:requestpaycheck')
 end)
 
 RegisterNetEvent('prdx-gopostal:client:canceljob', function()
