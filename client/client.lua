@@ -8,10 +8,10 @@ local ped = nil
 
 local numberOfStops = 0
 
+local rnd = 0
 local veh = nil
 local endBlip = nil
 local goPostDeliveryBlip = nil
-local rnd = 0
 
 local function spawnPed()
     RequestModel(Config.Ped.Model)
