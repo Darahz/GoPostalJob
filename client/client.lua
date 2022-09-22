@@ -2,6 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local jobDone = false
 local startedJob = false
 local jobCanceled = false
+local ped = nil
 
 local numberOfStops = 0
 
@@ -9,15 +10,16 @@ local veh = nil
 local endBlip = nil
 local rnd = 0
 
-local function SpawnJobPed()
+local function spawnPed()
     RequestModel(Config.Ped.Model)
     while not HasModelLoaded(Config.Ped.Model) do
         Wait(100)
     end
-    local ped = CreatePed(0,Config.Ped.Model,Config.Ped.Locaton,false,false)
+    ped = CreatePed(0,Config.Ped.Model,Config.Ped.Locaton,false,false)
     FreezeEntityPosition(ped,true)
     SetEntityInvincible(ped,true)
     SetBlockingOfNonTemporaryEvents(ped, true)
+    TaskStartScenarioInPlace(ped, Config.Ped.scenario, true, true)
     exports['qb-target']:AddTargetEntity(ped, {
         options = {
             {
@@ -28,6 +30,11 @@ local function SpawnJobPed()
         },
         distance = 2.0
     })
+end
+
+local function deletePed()
+    DeletePed(ped)
+    DeleteVehicle(veh)
 end
 
 local function SpawnGoPostVeh()
@@ -45,6 +52,11 @@ end
 
 RegisterNetEvent('gprdx:gopostal:client:requestpaycheck', function()
     TriggerServerEvent('gprdx:gopostal:server:requestpaycheck')
+end)
+
+RegisterNetEvent('prdx-gopostal:client:canceljob', function()
+    DeleteVehicle(veh)
+    DeleteWaypoint()
 end)
 
 RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
@@ -65,11 +77,11 @@ RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
         local labelTxt = tostring("Deliver " .. itemToDeliver .. "")
 
         SetNewWaypoint(endBlip.x,endBlip.y)
-
+        
         exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(currentRoute.location.x, currentRoute.location.y, currentRoute.location.z), 1, 1, {
             name = "gopostal_"..rnd,
             heading = currentRoute.location.w,
-            debugPoly = Config.Debug,
+            debugPoly = false,
             minZ = currentRoute.location.z - 1,
             maxZ = currentRoute.location.z + 1
         }, {
@@ -98,7 +110,16 @@ RegisterNetEvent('prdx-gopostal:client:StartPostalJob', function()
         })
         
         QBCore.Functions.Notify("[" .. i .. "/" .. #job.routes -1 .. "]" .. " Drawing route : " .. job.routes[i].name , "success")
+        
+        CreateThread(function()
+            while jobDone == false do
+                Citizen.Wait(0)
+                DrawMarker(2, currentRoute.location.x, currentRoute.location.y, currentRoute.location.z + 1.0, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 255, 128, 0, 50, false, true, 2, nil, nil, false)
+            end
+        end)
+
         while jobDone == false do
+            
             Citizen.Wait(1000)
         end
 
@@ -154,11 +175,33 @@ RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
     exports['qb-menu']:openMenu(MainMenu)
 end)
 
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() == resourceName then
+        spawnPed()
+    end
+end)
 
-RegisterCommand("startpostalroute",function()
-    SpawnJobPed()
-end, false)
+AddEventHandler('onResourceStop', function(resourceName)
+    DeleteVehicle(veh)
+    DeleteWaypoint()
+end)
 
-RegisterCommand("nextroute",function()
-    jobDone = true
-end, false)
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    print("Ped spawned")
+    spawnPed()
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    print("Ped removed")
+    deletePed()
+end)
+
+if Config.Debug == true then
+    RegisterCommand("nextroute",function()
+        jobDone = true
+    end, false)
+
+    RegisterCommand("spawngopostalped",function()
+        spawnPed()
+    end, false)
+end
