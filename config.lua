@@ -1,6 +1,4 @@
 Config = {}
-Config.Debug = true
-
 
 Config.VehicleOptions = {
     VehicleHash = -233098306,
@@ -22,7 +20,8 @@ Config.DeliveryTypes = {
 
 Config.Ped = {
     Model = "s_m_m_postal_02",
-    Locaton = vector4(52.29, 110.02, 78.16, 175.9)
+    Locaton = vector4(52.29, 110.02, 78.16, 175.9),
+    scenario = 'WORLD_HUMAN_CLIPBOARD'
 }
 
 
@@ -86,7 +85,7 @@ Config.PostalRoutes = {
             routes = {
                 [0] = {
                     name = "Haute Restaurant",
-                    location = vector4(-41.16, 227.65, 107.97, 260.53)
+                    location = vector4(-40.61, 227.5, 107.97, 261.18)
                 },
                 [1] = {
                     name = "Hardcore Comic store",
