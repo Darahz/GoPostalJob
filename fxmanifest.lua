@@ -2,7 +2,7 @@ fx_version 'cerulean'
 games {'gta5'}
 
 author "Darahz"
-description "Remove that trash"
+description "GoPostal job, we aim not to loose it"
 version "0.0.1"
 
 shared_script 'config.lua'
