@@ -1,19 +1,17 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
-local currentDeliveryDone = false --Skips first travel
 local jobStarted = false
 local jobCanceled = false
 local jobFinished = false
 
 local ped = nil
 
-local totalDistance = 0
-local firstPackageDelivered = false
-
 local rnd = 0
 local veh = nil
-local endBlip = nil
 local goPostDeliveryBlip = nil
+local drawMarkerForLocation = false
+local numberOfStops = 0
+local currentStop = nil
 
 local function spawnPed()
     RequestModel(Config.Ped.Model)
@@ -38,11 +36,10 @@ local function spawnPed()
 end
 
 local function cleanupAfterJob()
-    currentDeliveryDone = false
     jobCanceled = false
-    jobStarted = false
+    jobStarted  = false
     jobFinished = false
-    totalDistance = 0
+
     if veh then
         DeleteVehicle(veh)
         DeleteWaypoint()
@@ -77,14 +74,16 @@ end
 
 local function drawMarkerOnLocation(loc)
     CreateThread(function()
-        while currentDeliveryDone == false do
+        while drawMarkerForLocation == true do
             Citizen.Wait(0)
             DrawMarker(0, loc.x, loc.y, loc.z, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 255, 191, 0, 50, false, true, 2, nil, nil, false)
         end
+        drawMarkerForLocation = true
     end)
 end
 
 local function displayBlipOnLocation(loc,displayText)
+    if goPostDeliveryBlip then RemoveBlip(goPostDeliveryBlip) end
     goPostDeliveryBlip = AddBlipForCoord(loc)
     SetBlipSprite(goPostDeliveryBlip, 501)
     SetBlipColour(goPostDeliveryBlip, 0)
@@ -106,106 +105,94 @@ local function removePostalBlip()
     end
 end
 
-local function addDist(destination)
-    if firstPackageDelivered == true then
-        local playerPos = GetEntityCoords(PlayerPedId())
-        local targetPos = vector3(destination.x,destination.y,destination.z)
-        local distance = #(playerPos - targetPos)
-        totalDistance = totalDistance + math.floor(distance)
-        print(totalDistance)
-    else
-        firstPackageDelivered = true
-    end
+local function DrawBoxForDelivery(stop)
+    local itemToDeliver = Config.DeliveryTypes[math.random(#Config.DeliveryTypes)];
+    local labelTxt = tostring("Deliver " .. itemToDeliver .. "")
+    exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(stop.location.x, stop.location.y, stop.location.z), 1, 1, {
+        name = "gopostal_"..rnd,
+        heading = stop.location.w,
+        debugPoly = false,
+        minZ = stop.location.z - 1,
+        maxZ = stop.location.z + 1
+    }, {
+        options = {
+            {
+                label = labelTxt,
+                icon = 'fa-solid fa-mailbox',
+                action = function()
+                    TriggerEvent('animations:client:EmoteCommandStart', {"mechanic"})
+                    QBCore.Functions.Progressbar("deliver_mail", "Delivering " .. itemToDeliver, math.random(5000, 10000), false, true, {
+                        disableMovement = true,
+                        disableCarMovement = true,
+                        disableMouse = false,
+                        disableCombat = true,
+                    }, {}, {}, {}, function() -- Done
+                        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
+                        TriggerEvent('prdx-gopostal:client:NextRoute')
+                        drawMarkerForLocation = false
+                        exports['qb-target']:RemoveZone("gopostal_"..rnd)
+                    end, function() -- Cancel
+                        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
+                    end)
+                end,
+            }
+        },
+        distance = 2.0
+    })
 end
 
 RegisterNetEvent('prdx-gopostal:client:requestpaycheck', function()
     cleanupAfterJob()
     QBCore.Functions.Notify("GoPostal vehicle returned")
-    TriggerServerEvent('prdx-gopostal:server:server:PayShift', totalDistance)
+    TriggerServerEvent('prdx-gopostal:server:server:PayShift')
 end)
 
-RegisterNetEvent('prdx-gopostal:client:canceljob', function()
+RegisterNetEvent('prdx-gopostal:client:CancelShift', function()
+    TriggerServerEvent('prdx-gopostal:server:CancelShift')
+    cleanupAfterJob()
     removePostalBlip()
     DeleteVehicle(veh)
     DeleteWaypoint()
-    cleanupAfterJob()
 end)
 
-RegisterNetEvent('prdx-gopostal:client:startpostaljob', function()
-    local job = Config.PostalRoutes.Jobs[math.random(#Config.PostalRoutes.Jobs)]
-    local currentRoute = nil
-
-    jobStarted  = true
-    jobCanceled = false
-
+RegisterNetEvent('prdx-gopostal:client:NewShift', function()
     spawnGoPostVeh()
+    QBCore.Functions.TriggerCallback('prdx-gopostal:server:NewShift', function(shouldContinue, firstStop, totalStops)
+        numberOfStops = totalStops
+        drawMarkerForLocation = true
+        drawMarkerOnLocation(firstStop.location)
+        displayBlipOnLocation(firstStop.location,"Package Delivery")
+        currentStop = firstStop
+        DrawBoxForDelivery(currentStop)
+    end)
+end)
 
-    for i = 0, (#job.routes - 1) do
-        currentRoute = job.routes[i]
-        endBlip = vector2(currentRoute.location.x, currentRoute.location.y)
-        rnd = math.random(1000)
+RegisterNetEvent('prdx-gopostal:client:NextRoute', function()
+    QBCore.Functions.TriggerCallback('prdx-gopostal:server:NextRoute', function(nextStop, lastStop)
+        if lastStop == false then
+            drawMarkerOnLocation(nextStop.location)
+            displayBlipOnLocation(nextStop.location,"Package Delivery")
+            currentStop = nextStop
+            DrawBoxForDelivery(currentStop)
 
-        local itemToDeliver = Config.DeliveryTypes[math.random(#Config.DeliveryTypes)];
-        local labelTxt = tostring("Deliver " .. itemToDeliver .. "")
-
-        exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(currentRoute.location.x, currentRoute.location.y, currentRoute.location.z), 1, 1, {
-            name = "gopostal_"..rnd,
-            heading = currentRoute.location.w,
-            debugPoly = false,
-            minZ = currentRoute.location.z - 1,
-            maxZ = currentRoute.location.z + 1
-        }, {
-            options = {
-                {
-                    label = labelTxt,
-                    icon = 'fa-solid fa-mailbox',
-                    action = function()
-                        TriggerEvent('animations:client:EmoteCommandStart', {"mechanic"})
-                        QBCore.Functions.Progressbar("deliver_mail", "Delivering " .. itemToDeliver, math.random(5000, 10000), false, true, {
-                            disableMovement = true,
-                            disableCarMovement = true,
-                            disableMouse = false,
-                            disableCombat = true,
-                        }, {}, {}, {}, function() -- Done
-                            TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-                            currentDeliveryDone = true
-                            exports['qb-target']:RemoveZone("gopostal_"..rnd)
-                        end, function() -- Cancel
-                            TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-                        end)
-                    end,
-                }
-            },
-            distance = 2.0
-        })
-        
-        QBCore.Functions.Notify("[" .. i .. "/" .. #job.routes -1 .. "]" .. " Drawing route : " .. job.routes[i].name , "success")
-
-        displayBlipOnLocation(currentRoute.location,"Package Delivery")
-        drawMarkerOnLocation(currentRoute.location)
-        addDist(currentRoute.location)
-
-        while currentDeliveryDone == false do
-            Citizen.Wait(1000)
+            local playerPos = GetEntityCoords(PlayerPedId())
+            local targetPos = vector3(nextStop.location.x, nextStop.location.y, nextStop.location.z)
+            local distance = #(playerPos - targetPos)
+            TriggerServerEvent('prdx-gopostal:server:AddMilesToRoute', math.floor(distance))
+        else
+            QBCore.Functions.Notify("Good job! Time to back to GoPostal" , "success")
+            SetNewWaypoint(Config.PostalRoutes.GoPostalHQ.x, Config.PostalRoutes.GoPostalHQ.y)
         end
-        removePostalBlip()
-        if jobCanceled == true then
-            cleanupAfterJob()
-            break
-        end
-
-        currentDeliveryDone = false
-    end
-
-    currentRoute = job.routes[#job.routes] -- Return to GoPostal HQ
-
-    QBCore.Functions.Notify("Good job! Time to back to GoPostal" , "success")
-    SetNewWaypoint(currentRoute.location.x, currentRoute.location.y)
-    numberOfStops = #job.routes
-    jobFinished = true
+    end)
 end)
 
 RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
+    QBCore.Functions.TriggerCallback('prdx-gopostal:server:GetJobStatus', function(started, finished, canceled)
+        if started  == nil then jobStarted  = false else jobStarted  = started  end
+        if finished == nil then jobFinished = false else jobFinished = finished end
+        if canceled == nil then jobCanceled = false else jobCanceled = canceled end
+    end)
+
     local MainMenu = {
         {
             isMenuHeader = true,
@@ -224,7 +211,7 @@ RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
             txt = "Request a postal route",
             hidden = jobStarted,
             params = {
-                event = 'prdx-gopostal:client:startpostaljob',
+                event = 'prdx-gopostal:client:NewShift',
             }
         },
         {
@@ -232,7 +219,7 @@ RegisterNetEvent('prdx-gopostal:client:MainMenu', function()
             txt = "Cancel this postal route",
             hidden = not jobStarted,
             params = {
-                event = 'prdx-gopostal:client:canceljob',
+                event = 'prdx-gopostal:client:CancelShift',
             }
         }
     }
@@ -245,7 +232,6 @@ end)
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() == resourceName then
         spawnPed()
-        cleanupAfterJob()
         displayGoPostalBlip()
     end
 end)
@@ -258,11 +244,9 @@ AddEventHandler('onResourceStop', function(resourceName)
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    print("Ped spawned")
     spawnPed()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    print("Ped removed")
     DeletePed(ped)
 end)
