@@ -75,7 +75,6 @@ local function displayGoPostalBlip()
     EndTextCommandSetBlipName(goPostal)
 end
 
-
 local function drawMarkerOnLocation(loc)
     CreateThread(function()
         while currentDeliveryDone == false do
