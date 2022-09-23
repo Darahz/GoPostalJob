@@ -71,6 +71,7 @@ Config.PostalRoutes = {
         length = 3.0,
         width = 3.0
     },
+    GoPostalHQ = vector3(79.3, 97.18, 78.84),
     Jobs = {
         [0] = {
             name = "littleseoul route",
@@ -342,7 +343,7 @@ Config.PostalRoutes = {
                 },
                 [1] = {
                     name = "West vinewood 527",
-                    location = vector4(-524.11, 119.45, 63.12, 12.33)
+                    location = vector4(-524.29, 119.94, 63.12, 351.58)
                 },
                 [2] = {
                     name = "The Epsilon Program villa",
