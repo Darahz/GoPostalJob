@@ -5,8 +5,6 @@ local jobCanceled = false
 local jobFinished = false
 
 local ped = nil
-
-local rnd = 0
 local veh = nil
 local goPostDeliveryBlip = nil
 local drawMarkerForLocation = false
@@ -108,6 +106,7 @@ end
 local function DrawBoxForDelivery(stop)
     local itemToDeliver = Config.DeliveryTypes[math.random(#Config.DeliveryTypes)];
     local labelTxt = tostring("Deliver " .. itemToDeliver .. "")
+    local rnd = 0
     exports['qb-target']:AddBoxZone("gopostal_"..rnd, vector3(stop.location.x, stop.location.y, stop.location.z), 1, 1, {
         name = "gopostal_"..rnd,
         heading = stop.location.w,
