@@ -6,6 +6,17 @@ Config.VehicleOptions = {
     VehicleSpawnPos = vector4(60.74, 103.96, 79.04, 158.17)
 }
 
+Config.GoPostalJobBlip = {
+    location = vector3(61.33, 107.08, 79.07),
+    blip = 616,
+    color = 21
+}
+
+--[[Messages used for blip text and interaction text :
+    Deliver    <deliverytype>
+    Delivering <deliverytype>
+]]--
+
 Config.DeliveryTypes = {
     "mail",
     "news paper",
@@ -215,6 +226,165 @@ Config.PostalRoutes = {
                     location = vector3(79.3, 97.18, 78.84)
                 }
             }
-        }
+        },
+        [3] = {
+            name = "Downtown Los Santos",
+            routes = {
+                [0] = {
+                    name = "Daily globe international",
+                    location = vector4(-319.51, -610.05, 33.56, 92.81)
+                },
+                [1] = {
+                    name = "Schlongberg Sash",
+                    location = vector4(-223.08, -704.09, 33.59, 63.43)
+                },
+                [2] = {
+                    name = "Alta st",
+                    location = vector4(-232.98, -972.87, 29.29, 241.53)
+                },
+                [3] = {
+                    name = "Banner: Hotel and spa",
+                    location = vector4(-268.6, -1070.92, 25.27, 252.2)
+                },
+                [4] = {
+                    name = "Impound lot",
+                    location = vector4(-189.57, -1152.0, 23.04, 180.93)
+                },
+                [5] = {
+                    name = "Hookah Palace",
+                    location = vector4(-29.04, -984.22, 29.27, 66.39)
+                },
+                [6] = {
+                    name = "Fleeca bank",
+                    location = vector4(152.76, -1041.54, 29.37, 151.07)
+                },
+                [7] = {
+                    name = "J's bonds",
+                    location = vector4(361.69, -1067.6, 29.53, 3.76)
+                },
+                [8] = {
+                    name = "Los Santos Police Department",
+                    location = vector4(391.84, -1004.1, 29.42, 271.11)
+                },
+                [9] = {
+                    name = "Smoke on the water",
+                    location = vector4(357.77, -839.47, 29.29, 174.2)
+                },
+                [10] = {
+                    name = "Pillbox Hill Medical Center",
+                    location = vector4(235.15, -604.47, 42.27, 249.95)
+                },
+                [11] = {
+                    name = "GoPostal hq",
+                    location = vector3(79.3, 97.18, 78.84)
+                }
+            }
+        },
+        [4] = {
+            name = "East Los Santos",
+            routes = {
+                [0] = {
+                    name = "Bikini Tow HQ",
+                    location = vector4(788.3, -771.43, 26.44, 178.41)
+                },
+                [1] = {
+                    name = "Guns 4 Funs",
+                    location = vector4(835.25, -1036.91, 27.65, 279.66)
+                },
+                [2] = {
+                    name = "Soyler Textile",
+                    location = vector4(766.67, -1317.7, 27.28, 88.94)
+                },
+                [3] = {
+                    name = "San taqueria",
+                    location = vector4(991.95, -1397.06, 31.53, 28.58)
+                },
+                [4] = {
+                    name = "Los santos county : fire department",
+                    location = vector4(1170.99, -1464.12, 34.89, 168.48)
+                },
+                [5] = {
+                    name = "L T Weld supply co",
+                    location = vector4(1145.66, -1402.17, 34.8, 353.68)
+                },
+                [6] = {
+                    name = "Los santos bag co.",
+                    location = vector4(765.01, -1359.0, 27.88, 174.42)
+                },
+                [7] = {
+                    name = "Window Tinting",
+                    location = vector4(911.0, -1025.58, 38.21, 272.93)
+                },
+                [8] = {
+                    name = "Mufflers and tires",
+                    location = vector4(869.23, -1056.25, 29.44, 274.34)
+                },
+                [9] = {
+                    name = "Liquor Market",
+                    location = vector4(807.38, -1073.54, 28.92, 321.89)
+                },
+                [10] = {
+                    name = "Freedom land",
+                    location = vector4(838.72, -846.55, 26.38, 226.0)
+                },
+                [11] = {
+                    name = "GoPostal hq",
+                    location = vector3(79.3, 97.18, 78.84)
+                }
+            }
+        },
+        [5] = {
+            name = "Rockford Hills",
+            routes = {
+                [0] = {
+                    name = "West vinewood 548",
+                    location = vector4(-323.05, 133.89, 67.38, 359.7)
+                },
+                [1] = {
+                    name = "West vinewood 527",
+                    location = vector4(-524.11, 119.45, 63.12, 12.33)
+                },
+                [2] = {
+                    name = "The Epsilon Program villa",
+                    location = vector4(-698.87, 47.44, 44.03, 24.67)
+                },
+                [3] = {
+                    name = "Maracas",
+                    location = vector4(-777.48, -139.12, 37.79, 113.49)
+                },
+                [4] = {
+                    name = "Johnny's saloon",
+                    location = vector4(-726.15, -151.89, 37.14, 281.77)
+                },
+                [5] = {
+                    name = "Persues clothing store",
+                    location = vector4(-666.68, -329.09, 35.2, 122.26)
+                },
+                [6] = {
+                    name = "Rockford Dorset",
+                    location = vector4(-558.43, -387.41, 35.08, 0.09)
+                },
+                [7] = {
+                    name = "City Hall",
+                    location = vector4(-528.64, -266.33, 35.42, 298.51)
+                },
+                [8] = {
+                    name = "Harper unit for clinical psychology",
+                    location = vector4(-399.9, -316.57, 35.14, 142.78)
+                },
+                [9] = {
+                    name = "Rockford Plaza",
+                    location = vector4(-233.77, -332.24, 30.09, 276.85)
+                },
+                [10] = {
+                    name = "Los Santos Customs",
+                    location = vector4(-355.31, -144.11, 42.74, 302.35)
+                },
+                [11] = {
+                    name = "GoPostal hq",
+                    location = vector3(79.3, 97.18, 78.84)
+                }
+            }
+        },
     }
 }
